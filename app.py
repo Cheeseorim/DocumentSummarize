@@ -67,7 +67,7 @@ def parse_pdf_and_summarize(file_path):
     # API 제한을 고려하여 첫 4000자 사용
     
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1-mini",
         messages=[{"role": "system", "content": "당신은 문서를 요약하는 전문가입니다. 문서를 잘 확인하고, 사용자가 전체적인 내용을 쉽게 파악할 수 있도록 요약하세요."},
                   {"role": "user", "content": prompt}]
     )
