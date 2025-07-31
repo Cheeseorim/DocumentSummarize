@@ -19,7 +19,7 @@ parsed_dir = "./docs/parsed"
 os.makedirs(input_dir, exist_ok=True)
 os.makedirs(parsed_dir, exist_ok=True)
 
-url = "https://api.upstage.ai/v1/document-ai/document-digitization"
+url = "https://api.upstage.ai/v1/document-ai/document-parse"
 headers = {"Authorization": f"Bearer {upstage_api_key}"}
 
 client = OpenAI(api_key=openai_api_key)
@@ -32,15 +32,17 @@ def parse_pdf_and_summarize(file_path):
     with open(saved_file_path, "rb") as f:   
         files = {"document": f}
         data = {
-            "model": "ocr"
+            "output_formats": "['html', 'text', 'markdown']",
+            "coordinates": "true"
         }
         response = requests.post(url, headers=headers, files=files, data=data)
         result = response.json()
 
-    text_content = result["text"]
-    text_file_path = os.path.join(parsed_dir, file_name.replace(".pdf", "_parsed.md"))
-    with open(text_file_path, "w", encoding="utf-8") as f:
-        f.write(text_content)
+    markdown_content = result["content"]["markdown"]
+    # markdown_content = result.get("content", {}).get("markdown", "no markdown content found")
+    markdown_file_path = os.path.join(parsed_dir, file_name.replace(".pdf", "_parsed.md"))
+    with open(markdown_file_path, "w", encoding="utf-8") as f:
+        f.write(markdown_content)
     
     prompt = f"""문서를 다음 형식에 따라 요약해줘.
     
@@ -61,7 +63,7 @@ def parse_pdf_and_summarize(file_path):
     4. 전체 구조와 구조별 핵심 내용이 직관적으로 보이도록 정리하여, "3. 세부 요약"에 넣는다.
     5. 전체 내용을 3개 문장으로 요약하여, "2. 전체 요약"에 넣는다.
 
-    {text_content[:4000]}""" 
+    {markdown_content[:4000]}""" 
     # API 제한을 고려하여 첫 4000자 사용
     
     completion = client.chat.completions.create(
